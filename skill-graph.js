@@ -1,210 +1,165 @@
 /**
- * Interactive skill tree - radial hierarchy
+ * Layered Skill Galaxy - Multi-Ring Concentric Model
+ * Center: Core Identity | Ring 1: Domains | Ring 2: Subskills | Ring 3: Tools
  */
 (function() {
-  const SKILLS = [
-    { name: 'Python', category: 'Software Engg' },
-    { name: 'SQL', category: 'Software Engg' },
-    { name: 'JavaScript', category: 'Software Engg' },
-    { name: 'C', category: 'Software Engg' },
-    { name: 'MATLAB', category: 'Software Engg' },
-    { name: 'R', category: 'Software Engg' },
-    { name: 'Causal Inference', category: 'Product DS' },
-    { name: 'A/B Testing', category: 'Product DS' },
-    { name: 'Experimentation', category: 'Product DS' },
-    { name: 'KPI Design', category: 'Product DS' },
-    { name: 'Bayesian Modeling', category: 'Statistics' },
-    { name: 'Survival Analysis', category: 'Statistics' },
-    { name: 'Transformers', category: 'NLP' },
-    { name: 'Semantic Similarity', category: 'NLP' },
-    { name: 'RAG', category: 'GenAI' },
-    { name: 'Prompt Engineering', category: 'GenAI' },
-    { name: 'LLM Agents', category: 'Agentic AI' },
-    { name: 'Tool Use', category: 'Agentic AI' },
-    { name: 'Multi-Agent Systems', category: 'Agentic AI' },
-    { name: 'ReAct / CoT', category: 'Agentic AI' },
-    { name: 'PyTorch', category: 'ML Frameworks' },
-    { name: 'TensorFlow', category: 'ML Frameworks' },
-    { name: 'Scikit-Learn', category: 'ML Frameworks' },
-    { name: 'Hugging Face', category: 'ML Frameworks' },
-    { name: 'PySpark', category: 'Finance' },
-    { name: 'AWS', category: 'Cloud & Infra' },
-    { name: 'Lambda', category: 'Cloud & Infra' },
-    { name: 'Step Functions', category: 'Cloud & Infra' },
-    { name: 'Fargate', category: 'Cloud & Infra' },
-    { name: 'Athena', category: 'Cloud & Infra' },
-    { name: 'GCP', category: 'Cloud & Infra' },
-    { name: 'Vertex AI', category: 'Cloud & Infra' },
+  const CENTER = { label: 'Applied AI / Product Data Science' };
+
+  const RING1_DOMAINS = [
+    { id: 'product-ds', label: 'Product DS', color: '#6366f1' },
+    { id: 'genai', label: 'GenAI', color: '#f59e0b' },
+    { id: 'cloud', label: 'Cloud', color: '#ef4444' },
+    { id: 'nlp', label: 'NLP', color: '#06b6d4' },
+    { id: 'stats', label: 'Stats', color: '#8b5cf6' },
+    { id: 'agentic', label: 'Agentic AI', color: '#eab308' },
+    { id: 'ml', label: 'ML Frameworks', color: '#ec4899' },
   ];
 
-  const CATEGORY_COLORS = {
-    'Software Engg': '#00d4aa',
-    'Product DS': '#6366f1',
-    'Statistics': '#8b5cf6',
-    'NLP': '#06b6d4',
-    'GenAI': '#f59e0b',
-    'Agentic AI': '#eab308',
-    'ML Frameworks': '#ec4899',
-    'Finance': '#10b981',
-    'Cloud & Infra': '#ef4444',
-  };
-
-  const CATEGORY_ORDER = [
-    'Software Engg', 'Product DS', 'Statistics', 'NLP',
-    'GenAI', 'Agentic AI', 'ML Frameworks', 'Finance', 'Cloud & Infra'
+  const RING2_SUBSKILLS = [
+    { name: 'A/B Testing', domain: 'product-ds' },
+    { name: 'Causal Inference', domain: 'product-ds' },
+    { name: 'Experimentation', domain: 'product-ds' },
+    { name: 'KPI Design', domain: 'product-ds' },
+    { name: 'RAG', domain: 'genai' },
+    { name: 'Prompt Engineering', domain: 'genai' },
+    { name: 'LLM Agents', domain: 'agentic' },
+    { name: 'Tool Use', domain: 'agentic' },
+    { name: 'Multi-Agent', domain: 'agentic' },
+    { name: 'ReAct / CoT', domain: 'agentic' },
+    { name: 'Transformers', domain: 'nlp' },
+    { name: 'Semantic Similarity', domain: 'nlp' },
+    { name: 'Bayesian Modeling', domain: 'stats' },
+    { name: 'Time Series', domain: 'stats' },
+    { name: 'Infrastructure', domain: 'cloud' },
   ];
+
+  const RING3_TOOLS = [
+    { name: 'PyTorch', domain: 'ml' },
+    { name: 'HuggingFace', domain: 'ml' },
+    { name: 'Scikit-Learn', domain: 'ml' },
+    { name: 'AWS', domain: 'cloud' },
+    { name: 'Lambda', domain: 'cloud' },
+    { name: 'Step Functions', domain: 'cloud' },
+    { name: 'Athena', domain: 'cloud' },
+    { name: 'PySpark', domain: 'cloud' },
+    { name: 'Python', domain: 'product-ds' },
+    { name: 'SQL', domain: 'product-ds' },
+    { name: 'Ollama', domain: 'genai' },
+    { name: 'Whisper', domain: 'nlp' },
+  ];
+
+  const DOMAIN_COLORS = Object.fromEntries(RING1_DOMAINS.map(d => [d.id, d.color]));
 
   const container = document.getElementById('skill-graph');
   if (!container) return;
-  container.classList.add('skill-tree');
+  container.classList.add('skill-galaxy');
 
   const w = container.clientWidth || 600;
-  const h = Math.min(620, w * 1.0);
+  const h = Math.min(600, w * 0.98);
   const cx = w / 2;
   const cy = h / 2;
+  const padding = 80;
 
-  // Build tree: root -> categories -> skills
-  const categories = CATEGORY_ORDER.filter(cat =>
-    SKILLS.some(s => s.category === cat)
-  );
-  const offsetY = 40;
-  const root = { id: 'root', label: 'Expertise', x: cx, y: cy - 60 + offsetY, children: [] };
+  const r0 = 0;      // center
+  const r1 = 90;     // Ring 1: Domains
+  const r2 = 165;    // Ring 2: Subskills
+  const r3 = 240;    // Ring 3: Tools
 
-  const r1 = 125;  // radius to category nodes (ring around center Expertise)
-  const r2 = 270;  // radius to skill leaves
-  const wedgeSpan = (2 * Math.PI) / categories.length; // each category gets its own wedge
-
-  const categoryNodes = [];
-  categories.forEach((cat, i) => {
-    const angle = (i + 0.5) / categories.length * 2 * Math.PI - Math.PI / 2;
-    const skills = SKILLS.filter(s => s.category === cat);
-    const catX = cx + r1 * Math.cos(angle);
-    const catY = cy - 60 + offsetY + r1 * Math.sin(angle);
-    categoryNodes.push({ id: cat, label: cat, x: catX, y: catY, angle, skills });
-  });
-
-  // Position skills within their category's wedge only
-  const skillNodes = [];
-  categoryNodes.forEach(catNode => {
-    const n = catNode.skills.length;
-    const halfWedge = wedgeSpan * 0.5;
-    const spread = n > 1 ? (2 * halfWedge) / Math.max(1, n - 1) : 0;
-    const r = r2 + Math.min(70, (n - 1) * 14);
-    catNode.skills.forEach((s, j) => {
-      const t = n > 1 ? -halfWedge + j * spread : 0;
-      const a = catNode.angle + t;
-      skillNodes.push({
-        ...s,
-        x: cx + r * Math.cos(a),
-        y: cy - 60 + offsetY + r * Math.sin(a),
-        parentX: catNode.x,
-        parentY: catNode.y,
-      });
+  function placeOnRing(items, radius, startAngle = -Math.PI / 2) {
+    const n = items.length;
+    const step = (2 * Math.PI) / n;
+    return items.map((item, i) => {
+      const angle = startAngle + i * step;
+      return {
+        ...item,
+        x: cx + radius * Math.cos(angle),
+        y: cy + radius * Math.sin(angle),
+        angle,
+      };
     });
-  });
+  }
+
+  const domainNodes = placeOnRing(RING1_DOMAINS, r1);
+  const subskillNodes = placeOnRing(RING2_SUBSKILLS, r2);
+  const toolNodes = placeOnRing(RING3_TOOLS, r3);
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
   svg.setAttribute('width', '100%');
   svg.setAttribute('height', '100%');
-  svg.setAttribute('class', 'skill-graph-svg skill-tree-svg');
+  svg.setAttribute('class', 'skill-galaxy-svg');
 
-  // Links: root -> categories -> skills
-  const gLinks = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  gLinks.setAttribute('class', 'skill-tree-links');
-
-  categoryNodes.forEach(cat => {
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', root.x);
-    line.setAttribute('y1', root.y);
-    line.setAttribute('x2', cat.x);
-    line.setAttribute('y2', cat.y);
-    line.setAttribute('class', 'skill-tree-link skill-tree-link-branch');
-    gLinks.appendChild(line);
-  });
-
-  skillNodes.forEach(skill => {
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', skill.parentX);
-    line.setAttribute('y1', skill.parentY);
-    line.setAttribute('x2', skill.x);
-    line.setAttribute('y2', skill.y);
-    line.setAttribute('class', 'skill-tree-link skill-tree-link-leaf');
-    line.dataset.category = skill.category;
-    gLinks.appendChild(line);
-  });
-
-  svg.appendChild(gLinks);
-
-  // Root node
-  const gRoot = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  gRoot.setAttribute('class', 'skill-tree-root');
-  gRoot.setAttribute('transform', `translate(${root.x},${root.y})`);
-  const rootCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  rootCircle.setAttribute('r', 18);
-  rootCircle.setAttribute('fill', 'var(--accent)');
-  rootCircle.setAttribute('stroke', 'rgba(255,255,255,0.3)');
-  rootCircle.setAttribute('stroke-width', '1');
-  const rootLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-  rootLabel.textContent = root.label;
-  rootLabel.setAttribute('y', 38);
-  rootLabel.setAttribute('text-anchor', 'middle');
-  rootLabel.setAttribute('class', 'skill-tree-root-label');
-  gRoot.appendChild(rootCircle);
-  gRoot.appendChild(rootLabel);
-  svg.appendChild(gRoot);
-
-  // Category nodes
-  const gCategories = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  gCategories.setAttribute('class', 'skill-tree-categories');
-  categoryNodes.forEach(cat => {
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.setAttribute('class', 'skill-tree-category');
-    g.setAttribute('transform', `translate(${cat.x},${cat.y})`);
-    g.dataset.category = cat.id;
+  // Subtle ring guides
+  [r1, r2, r3].forEach((r, i) => {
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle.setAttribute('r', 14);
-    circle.setAttribute('fill', CATEGORY_COLORS[cat.id]);
+    circle.setAttribute('cx', cx);
+    circle.setAttribute('cy', cy);
+    circle.setAttribute('r', r);
+    circle.setAttribute('fill', 'none');
+    circle.setAttribute('stroke', 'rgba(255,255,255,0.08)');
+    circle.setAttribute('stroke-width', '1');
+    circle.setAttribute('class', 'galaxy-ring-guide');
+    svg.appendChild(circle);
+  });
+
+  // Center
+  const gCenter = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  gCenter.setAttribute('class', 'galaxy-center');
+  gCenter.setAttribute('transform', `translate(${cx},${cy})`);
+  const centerBg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  centerBg.setAttribute('r', 32);
+  centerBg.setAttribute('fill', 'var(--accent)');
+  centerBg.setAttribute('stroke', 'rgba(255,255,255,0.4)');
+  centerBg.setAttribute('stroke-width', '2');
+  const centerText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  centerText.textContent = 'Applied AI / Product DS';
+  centerText.setAttribute('y', 5);
+  centerText.setAttribute('text-anchor', 'middle');
+  centerText.setAttribute('class', 'galaxy-center-label');
+  centerText.setAttribute('font-size', '9');
+  gCenter.appendChild(centerBg);
+  gCenter.appendChild(centerText);
+  svg.appendChild(gCenter);
+
+  function createNode(g, node, r, ringClass, labelClass) {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    el.setAttribute('class', ringClass);
+    el.setAttribute('transform', `translate(${node.x},${node.y})`);
+    el.dataset.domain = node.domain || node.id;
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('r', r);
+    const color = node.color || DOMAIN_COLORS[node.domain];
+    circle.setAttribute('fill', color || 'var(--accent)');
     circle.setAttribute('stroke', 'rgba(255,255,255,0.4)');
-    circle.setAttribute('stroke-width', '1');
+    circle.setAttribute('stroke-width', '1.5');
     const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    label.textContent = cat.label;
-    label.setAttribute('y', 28);
-    label.setAttribute('text-anchor', 'middle');
-    label.setAttribute('class', 'skill-tree-category-label');
-    g.appendChild(circle);
-    g.appendChild(label);
-    gCategories.appendChild(g);
-  });
-  svg.appendChild(gCategories);
-
-  // Skill nodes (leaves)
-  const gSkills = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  gSkills.setAttribute('class', 'skill-tree-skills');
-  skillNodes.forEach((skill, i) => {
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.setAttribute('class', 'skill-tree-skill');
-    g.setAttribute('transform', `translate(${skill.x},${skill.y})`);
-    g.dataset.name = skill.name;
-    g.dataset.category = skill.category;
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle.setAttribute('r', 10);
-    circle.setAttribute('fill', CATEGORY_COLORS[skill.category]);
-    circle.setAttribute('stroke', 'rgba(255,255,255,0.3)');
-    circle.setAttribute('stroke-width', '1');
-    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    label.textContent = skill.name;
-    const angle = Math.atan2(skill.y - (cy - 60), skill.x - cx);
-    const rightSide = angle > -Math.PI/2 && angle < Math.PI/2;
-    label.setAttribute('x', rightSide ? 14 : -14);
+    label.textContent = node.label || node.name;
+    const angle = node.angle * 180 / Math.PI;
+    const rightSide = angle > -90 && angle < 90;
+    label.setAttribute('x', rightSide ? r + 8 : -r - 8);
     label.setAttribute('y', 4);
     label.setAttribute('text-anchor', rightSide ? 'start' : 'end');
-    label.setAttribute('class', 'skill-tree-skill-label');
-    g.appendChild(circle);
-    g.appendChild(label);
-    gSkills.appendChild(g);
-  });
-  svg.appendChild(gSkills);
+    label.setAttribute('class', labelClass);
+    el.appendChild(circle);
+    el.appendChild(label);
+    g.appendChild(el);
+    return el;
+  }
+
+  const gRing1 = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  gRing1.setAttribute('class', 'galaxy-ring galaxy-ring-1');
+  domainNodes.forEach(n => createNode(gRing1, n, 18, 'galaxy-domain', 'galaxy-domain-label'));
+  svg.appendChild(gRing1);
+
+  const gRing2 = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  gRing2.setAttribute('class', 'galaxy-ring galaxy-ring-2');
+  subskillNodes.forEach(n => createNode(gRing2, n, 14, 'galaxy-subskill', 'galaxy-subskill-label'));
+  svg.appendChild(gRing2);
+
+  const gRing3 = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  gRing3.setAttribute('class', 'galaxy-ring galaxy-ring-3');
+  toolNodes.forEach(n => createNode(gRing3, n, 11, 'galaxy-tool', 'galaxy-tool-label'));
+  svg.appendChild(gRing3);
 
   const tooltip = document.createElement('div');
   tooltip.className = 'skill-graph-tooltip';
@@ -220,72 +175,72 @@
     tooltip.style.left = evt.clientX + 'px';
     tooltip.style.top = (evt.clientY + 16) + 'px';
   }
-
   function hideTooltip() {
     tooltip.style.display = 'none';
   }
 
-  function setCategoryHighlight(cat) {
-    gCategories.querySelectorAll('.skill-tree-category').forEach(g => {
-      g.classList.toggle('active', g.dataset.category === cat);
-    });
-    gSkills.querySelectorAll('.skill-tree-skill').forEach(g => {
-      g.classList.toggle('active', g.dataset.category === cat);
-    });
-    gLinks.querySelectorAll('.skill-tree-link-leaf').forEach(line => {
-      line.classList.toggle('active', line.dataset.category === cat);
+  function setHighlight(domain) {
+    [gRing1, gRing2, gRing3].forEach(g => {
+      g.querySelectorAll('[data-domain]').forEach(el => {
+        el.classList.toggle('active', domain ? el.dataset.domain === domain : false);
+      });
     });
   }
 
-  gCategories.querySelectorAll('.skill-tree-category').forEach(g => {
-    g.addEventListener('mouseenter', (e) => {
-      setCategoryHighlight(g.dataset.category);
-      showTooltip(e, g.dataset.category);
+  function addListeners(g) {
+    g.querySelectorAll('[data-domain]').forEach(el => {
+      const domain = el.dataset.domain;
+      const domainInfo = RING1_DOMAINS.find(d => d.id === domain);
+      const label = el.querySelector('text')?.textContent || domainInfo?.label || domain;
+      el.addEventListener('mouseenter', (e) => {
+        setHighlight(domain);
+        showTooltip(e, label);
+      });
+      el.addEventListener('mousemove', (e) => {
+        tooltip.style.left = e.clientX + 'px';
+        tooltip.style.top = (e.clientY + 16) + 'px';
+      });
+      el.addEventListener('mouseleave', () => {
+        setHighlight(null);
+        hideTooltip();
+      });
     });
-    g.addEventListener('mousemove', (e) => {
-      tooltip.style.left = e.clientX + 'px';
-      tooltip.style.top = (e.clientY + 16) + 'px';
-    });
-    g.addEventListener('mouseleave', () => {
-      setCategoryHighlight(null);
-      hideTooltip();
-    });
-  });
+  }
+  addListeners(gRing1);
+  addListeners(gRing2);
+  addListeners(gRing3);
 
-  gSkills.querySelectorAll('.skill-tree-skill').forEach(g => {
-    g.addEventListener('mouseenter', (e) => {
-      setCategoryHighlight(g.dataset.category);
-      showTooltip(e, `${g.dataset.name} · ${g.dataset.category}`);
-    });
-    g.addEventListener('mousemove', (e) => {
-      tooltip.style.left = e.clientX + 'px';
-      tooltip.style.top = (e.clientY + 16) + 'px';
-    });
-    g.addEventListener('mouseleave', () => {
-      setCategoryHighlight(null);
-      hideTooltip();
-    });
+  gCenter.addEventListener('mouseenter', (e) => {
+    showTooltip(e, CENTER.label);
+    gCenter.classList.add('active');
+  });
+  gCenter.addEventListener('mousemove', (e) => {
+    tooltip.style.left = e.clientX + 'px';
+    tooltip.style.top = (e.clientY + 16) + 'px';
+  });
+  gCenter.addEventListener('mouseleave', () => {
+    hideTooltip();
+    gCenter.classList.remove('active');
   });
 
   const hint = document.createElement('p');
   hint.className = 'skill-graph-hint';
-  hint.textContent = 'Hover over categories or skills to highlight';
+  hint.textContent = 'Hover over rings to explore · Core → Domains → Subskills → Tools';
   graphWrapper.appendChild(hint);
   container.appendChild(graphWrapper);
 
   const legend = document.createElement('div');
   legend.className = 'skill-graph-legend';
-  CATEGORY_ORDER.forEach(cat => {
-    if (!(cat in CATEGORY_COLORS)) return;
-    const dot = document.createElement('span');
-    dot.className = 'legend-dot';
-    dot.style.background = CATEGORY_COLORS[cat];
-    const text = document.createElement('span');
-    text.textContent = cat;
+  const ringLabels = [
+    { label: 'Center: Core Identity', class: 'legend-ring0' },
+    { label: 'Ring 1: Domains', class: 'legend-ring1' },
+    { label: 'Ring 2: Subskills', class: 'legend-ring2' },
+    { label: 'Ring 3: Tools', class: 'legend-ring3' },
+  ];
+  ringLabels.forEach(({ label, class: c }) => {
     const item = document.createElement('span');
-    item.className = 'legend-item';
-    item.appendChild(dot);
-    item.appendChild(text);
+    item.className = 'legend-item ' + c;
+    item.textContent = label;
     legend.appendChild(item);
   });
   container.appendChild(legend);
