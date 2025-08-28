@@ -615,11 +615,90 @@ body:hover .cursor-glow { opacity: 1; }
 .skill-graph.dragging {
   cursor: grabbing;
 }
-.skill-graph .skill-graph-svg {
+.skill-graph .skill-graph-svg,
+.skill-graph .skill-galaxy-svg {
   display: block;
   width: 100%;
   height: 100%;
+  overflow: visible;
 }
+.skill-graph.skill-galaxy {
+  overflow: visible;
+}
+/* Galaxy layout - concentric rings */
+.skill-graph.skill-galaxy .galaxy-center {
+  cursor: pointer;
+}
+.skill-graph.skill-galaxy .galaxy-center circle {
+  transition: transform var(--transition), filter var(--transition);
+}
+.skill-graph.skill-galaxy .galaxy-center:hover circle,
+.skill-graph.skill-galaxy .galaxy-center.active circle {
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 12px var(--accent-glow));
+}
+.skill-graph.skill-galaxy .galaxy-center-label {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  fill: #0a0a0b;
+  pointer-events: none;
+  paint-order: stroke fill;
+  stroke: rgba(255,255,255,0.5);
+  stroke-width: 0.5px;
+}
+.skill-graph.skill-galaxy .galaxy-domain,
+.skill-graph.skill-galaxy .galaxy-subskill,
+.skill-graph.skill-galaxy .galaxy-tool {
+  cursor: pointer;
+}
+.skill-graph.skill-galaxy .galaxy-domain circle,
+.skill-graph.skill-galaxy .galaxy-subskill circle,
+.skill-graph.skill-galaxy .galaxy-tool circle {
+  transition: transform var(--transition), filter var(--transition), opacity var(--transition);
+}
+.skill-graph.skill-galaxy .galaxy-domain:hover circle,
+.skill-graph.skill-galaxy .galaxy-domain.active circle,
+.skill-graph.skill-galaxy .galaxy-subskill:hover circle,
+.skill-graph.skill-galaxy .galaxy-subskill.active circle,
+.skill-graph.skill-galaxy .galaxy-tool:hover circle,
+.skill-graph.skill-galaxy .galaxy-tool.active circle {
+  transform: scale(1.25);
+  filter: drop-shadow(0 0 8px currentColor);
+  opacity: 1;
+}
+.skill-graph.skill-galaxy .galaxy-domain:not(.active) circle,
+.skill-graph.skill-galaxy .galaxy-subskill:not(.active) circle,
+.skill-graph.skill-galaxy .galaxy-tool:not(.active) circle {
+  opacity: 0.95;
+}
+.skill-graph.skill-galaxy .galaxy-domain-label,
+.skill-graph.skill-galaxy .galaxy-subskill-label,
+.skill-graph.skill-galaxy .galaxy-tool-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 500;
+  fill: var(--text);
+  pointer-events: none;
+}
+.skill-graph.skill-galaxy .galaxy-domain:hover .galaxy-domain-label,
+.skill-graph.skill-galaxy .galaxy-domain.active .galaxy-domain-label,
+.skill-graph.skill-galaxy .galaxy-subskill:hover .galaxy-subskill-label,
+.skill-graph.skill-galaxy .galaxy-subskill.active .galaxy-subskill-label,
+.skill-graph.skill-galaxy .galaxy-tool:hover .galaxy-tool-label,
+.skill-graph.skill-galaxy .galaxy-tool.active .galaxy-tool-label {
+  fill: var(--text);
+  font-weight: 600;
+}
+.skill-graph.skill-galaxy .skill-graph-legend {
+  flex-direction: column;
+}
+.skill-graph.skill-galaxy .legend-item {
+  font-size: 0.75rem;
+}
+.skill-graph.skill-galaxy .legend-ring0 { color: var(--accent); }
+.skill-graph.skill-galaxy .legend-ring1 { color: #6366f1; }
+.skill-graph.skill-galaxy .legend-ring2 { color: #06b6d4; }
+.skill-graph.skill-galaxy .legend-ring3 { color: var(--text-muted); }
 /* Tree layout */
 .skill-graph.skill-tree .skill-tree-link {
   stroke: rgba(255, 255, 255, 0.1);
