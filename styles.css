@@ -27,6 +27,8 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
 }
+.desktop-only { display: block; }
+.mobile-only { display: none; }
 a { color: inherit; text-decoration: none; transition: color var(--transition), opacity var(--transition); }
 a:hover { color: var(--accent); }
 ul { list-style: none; }
@@ -280,6 +282,21 @@ body:hover .cursor-glow { opacity: 1; }
   }
   .main-scroll {
     padding-right: 0;
+  }
+  .desktop-only {
+    display: none !important;
+  }
+  .mobile-only {
+    display: block;
+  }
+  .hero-mobile-photo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+  .hero-photo {
+    width: 220px;
+    height: 220px;
   }
 }
 .btn {
