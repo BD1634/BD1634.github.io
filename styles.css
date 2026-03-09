@@ -292,6 +292,9 @@ body:hover .cursor-glow { opacity: 1; }
   .main-scroll {
     padding-right: 0;
   }
+  .main-scroll::after {
+    content: none;
+  }
 }
 .btn {
   display: inline-flex;
