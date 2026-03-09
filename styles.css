@@ -157,17 +157,6 @@ body:hover .cursor-glow { opacity: 1; }
   padding-right: 360px;
   position: relative;
 }
-.main-scroll::after {
-  content: '';
-  position: fixed;
-  top: 0;
-  right: 320px;
-  width: 180px;
-  height: 100vh;
-  background: linear-gradient(to right, transparent 0%, var(--bg) 100%);
-  pointer-events: none;
-  z-index: 45;
-}
 .hero-content {
   position: relative;
   z-index: 1;
@@ -291,9 +280,6 @@ body:hover .cursor-glow { opacity: 1; }
   }
   .main-scroll {
     padding-right: 0;
-  }
-  .main-scroll::after {
-    content: none;
   }
 }
 .btn {
