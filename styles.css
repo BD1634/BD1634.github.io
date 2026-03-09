@@ -278,7 +278,7 @@ body:hover .cursor-glow { opacity: 1; }
 }
 @media (max-width: 1100px) {
   .photo-sidebar {
-    display: none;
+    display: none !important;
   }
   .main-scroll {
     padding-right: 0;
